@@ -1,0 +1,6 @@
+cmd + shift + f             -> find any keyword/text in files
+cmd + shift + o             -> search the file
+cmd + f                     -> find in a file
+cmd + r                     -> replace in a file
+
+./mvnw spring-boot:run      -> run spring boot application

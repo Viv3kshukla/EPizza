@@ -1,0 +1,41 @@
+
+Database
+
+    Pizza
+        - pizza_id
+        - pizza_name
+        - pizza_type
+        - pizza_price
+        - nutritional_information
+
+    Customers
+        - customer_id
+        - customer_name
+        - customer_phone
+        - customer_email
+
+    Order
+        - order_id
+        - shipping_address_id
+        - customer_id
+        - order_status
+        - order_amount
+
+    Order_Pizza
+        - id
+        - pizza_id
+        - quantity
+        - order_id
+
+
+ ----------------------------------
+
+  Ingredients
+        - ingredients_id
+        - ingredients_name
+        - ingredients_price_per_unit
+        - nutritional_information
+
+    Pizza_Ingredients
+        - pizza_id
+        - ingredients_id
