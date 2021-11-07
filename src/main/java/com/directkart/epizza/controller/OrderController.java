@@ -1,27 +1,32 @@
 package com.directkart.epizza.controller;
 
+import com.directkart.epizza.api.OrderRequest;
 import com.directkart.epizza.model.Address;
+import com.directkart.epizza.model.Customer;
 import com.directkart.epizza.model.Order;
 import com.directkart.epizza.repository.IAddressRepository;
+import com.directkart.epizza.repository.ICustomerRepository;
 import com.directkart.epizza.repository.IOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.directkart.epizza.utils.constants.ApplicationConstants;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @RestController
 public class OrderController {
 
     @Autowired
-    IOrderRepository orderRepository;
+    private IAddressRepository addressRepository;
 
     @Autowired
-    IAddressRepository addressRepository;
+    private IOrderRepository orderRepository;
+
+    @Autowired
+    private ICustomerRepository customerRepository;
 
     @GetMapping("/api/orders/{order_id}")
     @ResponseBody
@@ -31,22 +36,47 @@ public class OrderController {
 
     @GetMapping("/api/orders/list")
     @ResponseBody
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return new ResponseEntity<>(null, HttpStatus.OK);
+    public ResponseEntity<Set<Order>> getAllOrders(@NotNull @RequestParam("customer_id") Long customerId) {
+        Set<Order> orderSet = orderRepository.findAllByCustomerId(customerId);
+        if (!orderSet.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(orderSet);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/api/orders")
-    public ResponseEntity<Order> createOrder (@RequestBody Map<String, String> orderRequest) {
+    @ResponseBody
+    public ResponseEntity<Order> createOrder (@RequestBody OrderRequest orderRequest) {
 
         Address shippingAddress = Address.builder()
-                .zipCode(orderRequest.get(ApplicationConstants.ZIP_CODE))
-                .cityName(orderRequest.get(ApplicationConstants.CITY_NAME))
-                .country(orderRequest.get(ApplicationConstants.COUNTRY))
-                .state(orderRequest.get(ApplicationConstants.STATE))
-                .street(orderRequest.get(ApplicationConstants.STREET))
+                .zipCode(orderRequest.getZipCode())
+                .cityName(orderRequest.getCityName())
+                .country(orderRequest.getCountry())
+                .state(orderRequest.getState())
+                .street(orderRequest.getStreetName())
                 .build();
         addressRepository.save(shippingAddress);
-        Order order = Order.builder().customerId(orderRequest.get("customerId")).build();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(order);
+        Customer customer;
+        Optional<Customer> customerOptional = customerRepository.findById(orderRequest.getCustomerId());
+        if (customerOptional.isPresent()) {
+            customer = customerOptional.get();
+        } else {
+            customer = Customer.builder()
+                    .id(orderRequest.getCustomerId())
+                    .firstName(orderRequest.getFirstName())
+                    .lastName(orderRequest.getLastName())
+                    .customerPhone(orderRequest.getCustomerPhone())
+                    .customerEmail(orderRequest.getCustomerEmail())
+                    .build();
+            customerRepository.save(customer);
+        }
+
+        Order order = Order.builder()
+                .customer(customer)
+                .shippingAddress(shippingAddress)
+                .build();
+        orderRepository.save(order);
+        return ResponseEntity.status(HttpStatus.OK).body(order);
     }
 }

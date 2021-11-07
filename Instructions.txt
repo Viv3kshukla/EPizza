@@ -4,3 +4,5 @@ cmd + f                     -> find in a file
 cmd + r                     -> replace in a file
 
 ./mvnw spring-boot:run      -> run spring boot application
+
+api docs -> host/swagger-ui.html
