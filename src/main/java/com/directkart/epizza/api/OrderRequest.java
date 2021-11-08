@@ -16,10 +16,15 @@ public class OrderRequest {
     public String lastName;
     public String customerEmail;
     public String customerPhone;
-    public String country;
-    public String cityName;
-    public String state;
-    public String streetName;
-    public String zipCode;
+    public String shippingCountry;
+    public String shippingCityName;
+    public String shippingState;
+    public String shippingStreetName;
+    public String shippingZipCode;
+    public String billingCountry;
+    public String billingCityName;
+    public String billingState;
+    public String billingStreetName;
+    public String billingZipCode;
 
 }

@@ -1,9 +1,12 @@
 package com.directkart.epizza.controller;
 
 import com.directkart.epizza.api.OrderRequest;
+import com.directkart.epizza.exception.InvalidRequestException;
+import com.directkart.epizza.exception.ResourceNotFoundException;
 import com.directkart.epizza.model.Address;
 import com.directkart.epizza.model.Customer;
 import com.directkart.epizza.model.Order;
+import com.directkart.epizza.model.OrderStatus;
 import com.directkart.epizza.repository.IAddressRepository;
 import com.directkart.epizza.repository.ICustomerRepository;
 import com.directkart.epizza.repository.IOrderRepository;
@@ -30,13 +33,15 @@ public class OrderController {
 
     @GetMapping("/api/orders/{order_id}")
     @ResponseBody
-    public ResponseEntity<Order> getOrderInfo (@NotNull @PathVariable("order_id") String orderId) {
-        return new ResponseEntity<>(null, HttpStatus.OK);
+    public ResponseEntity<Order> getOrderInfo(@NotNull @PathVariable("order_id") Long orderId) {
+        return orderRepository.findById(orderId).map(order -> {
+            return ResponseEntity.status(HttpStatus.OK).body(order);
+        }).orElseThrow(ResourceNotFoundException::new);
     }
 
-    @GetMapping("/api/orders/list")
+    @GetMapping("/api/{customer_id}/orders")
     @ResponseBody
-    public ResponseEntity<Set<Order>> getAllOrders(@NotNull @RequestParam("customer_id") Long customerId) {
+    public ResponseEntity<Set<Order>> getAllOrders(@NotNull @PathVariable("customer_id") Long customerId) {
         Set<Order> orderSet = orderRepository.findAllByCustomerId(customerId);
         if (!orderSet.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(orderSet);
@@ -50,11 +55,11 @@ public class OrderController {
     public ResponseEntity<Order> createOrder (@RequestBody OrderRequest orderRequest) {
 
         Address shippingAddress = Address.builder()
-                .zipCode(orderRequest.getZipCode())
-                .cityName(orderRequest.getCityName())
-                .country(orderRequest.getCountry())
-                .state(orderRequest.getState())
-                .street(orderRequest.getStreetName())
+                .zipCode(orderRequest.getShippingZipCode())
+                .cityName(orderRequest.getShippingCityName())
+                .country(orderRequest.getShippingCountry())
+                .state(orderRequest.getShippingState())
+                .street(orderRequest.getShippingStreetName())
                 .build();
         addressRepository.save(shippingAddress);
         Customer customer;
@@ -75,6 +80,7 @@ public class OrderController {
         Order order = Order.builder()
                 .customer(customer)
                 .shippingAddress(shippingAddress)
+                .orderStatus(OrderStatus.INITIATED)
                 .build();
         orderRepository.save(order);
         return ResponseEntity.status(HttpStatus.OK).body(order);

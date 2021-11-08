@@ -10,6 +10,6 @@ import java.util.Set;
 
 @Repository
 public interface IOrderRepository extends JpaRepository<Order, String> {
-    Optional<Order> findById (String orderId);
+    Optional<Order> findById (Long orderId);
     Set<Order> findAllByCustomerId(Long customerId);
 }

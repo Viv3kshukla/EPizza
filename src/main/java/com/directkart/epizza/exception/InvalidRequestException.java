@@ -1,6 +1,6 @@
 package com.directkart.epizza.exception;
 
-public class InvalidRequestException extends DirectKartException {
+public class InvalidRequestException extends DirectKartRuntimeException {
     public InvalidRequestException(int httpResponseCode, String status, String errorCode, String errorMessage) {
         super (httpResponseCode, status, errorCode, errorMessage);
     }
